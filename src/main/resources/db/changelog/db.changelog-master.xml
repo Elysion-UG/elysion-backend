@@ -6,7 +6,7 @@
         http://www.liquibase.org/xml/ns/dbchangelog
         https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
 
-    <!-- Beispiel: User-Tabelle -->
+    <!-- User-Tabelle -->
     <changeSet id="1-create-user-table" author="karl">
         <createTable tableName="users">
             <column name="id" type="UUID">
@@ -22,6 +22,14 @@
                 <constraints nullable="false"/>
             </column>
         </createTable>
+    </changeSet>
+
+    <changeSet id="2-add-salt-column" author="dimitri">
+        <addColumn tableName="users">
+            <column name="salt" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
     </changeSet>
 
 </databaseChangeLog>
