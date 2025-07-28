@@ -68,6 +68,12 @@
             <artifactId>jbcrypt</artifactId>
             <version>0.4</version>
         </dependency>
+        <dependency>
+            <groupId>jakarta.enterprise</groupId>
+            <artifactId>jakarta.enterprise.cdi-api</artifactId>
+            <version>4.0.1</version> <!-- Passend zu Quarkus 3.x -->
+            <scope>provided</scope>
+        </dependency>
     </dependencies>
 
     <build>

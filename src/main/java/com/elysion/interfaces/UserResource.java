@@ -7,6 +7,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+import org.jboss.logging.Logger;
 
 import java.util.UUID;
 
@@ -14,6 +15,8 @@ import java.util.UUID;
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 public class UserResource {
+
+    private static final Logger LOG = Logger.getLogger(UserService.class); // ← hier definierst du LOG
 
     @Inject
     UserService userService;
@@ -32,10 +35,13 @@ public class UserResource {
     @Path("/register")
     @Transactional
     public Response register(RegisterRequest request) {
+        LOG.info("Register request: " + request.toString());
         try {
             User user = userService.register(request.email, request.password);
+            LOG.info("Register successful");
             return Response.status(Response.Status.CREATED).entity(user.id).build();
         } catch (IllegalArgumentException e) {
+            LOG.error(e.getMessage());
             return Response.status(Response.Status.CONFLICT).entity(e.getMessage()).build();
         }
     }
@@ -43,10 +49,13 @@ public class UserResource {
     @POST
     @Path("/login")
     public Response login(LoginRequest request) {
+        LOG.info("login request: " + request.toString());
         try {
             User user = userService.authenticate(request.email, request.password);
+            LOG.info("login successful");
             return Response.ok().entity("Login successful for " + user.email).build();
         } catch (IllegalArgumentException e) {
+            LOG.error(e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
         }
     }
