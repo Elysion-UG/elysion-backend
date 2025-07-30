@@ -74,6 +74,10 @@
             <version>4.0.1</version> <!-- Passend zu Quarkus 3.x -->
             <scope>provided</scope>
         </dependency>
+        <dependency>
+            <groupId>io.quarkus</groupId>
+            <artifactId>quarkus-hibernate-validator</artifactId>
+        </dependency>
     </dependencies>
 
     <build>

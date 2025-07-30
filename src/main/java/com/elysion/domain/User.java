@@ -26,14 +26,20 @@ public class User extends PanacheEntityBase {
     @Column(name = "salt", nullable = false)
     public String salt;
 
+    @Column(name = "role", nullable = false)
+    public String role;
+
+
     // Convenience constructor
     public User() {
     }
 
-    public User(UUID id, String email, String passwordHash, OffsetDateTime createdAt) {
+    public User(UUID id, String email, String passwordHash, String salt, String role, OffsetDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.passwordHash = passwordHash;
+        this.salt = salt;
+        this.role = role;
         this.createdAt = createdAt;
     }
 }

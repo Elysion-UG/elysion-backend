@@ -32,6 +32,9 @@ public class UserService {
         user.passwordHash = hash;
         user.createdAt = OffsetDateTime.now();
 
+        // hier erstmal default Rolle als User setzten:
+        user.role = "User";
+
         user.persist();
 
         return user;
@@ -49,8 +52,8 @@ public class UserService {
     public String generateJwt(User user) {
         return Jwt.issuer("my-issuer")
                 .upn(user.email)
-                .groups(Set.of("User"))
-                .expiresIn(Duration.ofMinutes(20))
+                .groups(Set.of(user.role))
+                .expiresIn(Duration.ofHours(2))
                 .sign();
     }
 

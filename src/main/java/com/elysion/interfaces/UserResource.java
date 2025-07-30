@@ -2,14 +2,16 @@ package com.elysion.interfaces;
 
 import com.elysion.application.UserService;
 import com.elysion.domain.User;
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import jakarta.ws.rs.*;
-import jakarta.ws.rs.core.Context;
-import jakarta.ws.rs.core.MediaType;
-import jakarta.ws.rs.core.Response;
-import jakarta.ws.rs.core.SecurityContext;
+import jakarta.ws.rs.core.*;
 import org.jboss.logging.Logger;
 
 import java.util.Map;
@@ -26,7 +28,9 @@ public class UserResource {
     UserService userService;
 
     public static class RegisterRequest {
+        @NotBlank @Email
         public String email;
+        @NotBlank @Size(min=8)
         public String password;
     }
 
@@ -38,7 +42,7 @@ public class UserResource {
     @POST
     @Path("/register")
     @Transactional
-    public Response register(RegisterRequest request) {
+    public Response register(@Valid RegisterRequest request) {
         LOG.info("Register request: " + request.toString());
         try {
             User user = userService.register(request.email, request.password);
@@ -52,15 +56,18 @@ public class UserResource {
 
     @POST
     @Path("/login")
+    @PermitAll
     public Response login(LoginRequest request) {
         try {
             User user = userService.authenticate(request.email, request.password);
             String token = userService.generateJwt(user);
-            return Response.ok()
-                    .entity(Map.of("token", token))
+            return Response.ok(Map.of("token", token))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .build();
         } catch (IllegalArgumentException e) {
-            return Response.status(Response.Status.UNAUTHORIZED).entity(e.getMessage()).build();
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("error", e.getMessage()))
+                    .build();
         }
     }
 

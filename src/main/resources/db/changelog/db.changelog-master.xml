@@ -32,4 +32,12 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="3-add-role-to-user" author="karl">
+        <addColumn tableName="users">
+            <column name="role" type="VARCHAR(50)" defaultValue="User">
+                <constraints nullable="false"/>
+            </column>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>
