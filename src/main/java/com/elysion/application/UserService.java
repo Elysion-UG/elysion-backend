@@ -2,10 +2,13 @@ package com.elysion.application;
 
 import com.elysion.domain.User;
 import com.elysion.security.PasswordService;
+import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 
+import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.Set;
 import java.util.UUID;
 
 @ApplicationScoped
@@ -40,5 +43,24 @@ public class UserService {
             throw new IllegalArgumentException("Invalid credentials");
         }
         return user;
+    }
+
+    /** Erzeugt ein JWT mit 2‑Stunden‑Laufzeit und Gruppe "User" */
+    public String generateJwt(User user) {
+        return Jwt.issuer("my-issuer")
+                .upn(user.email)
+                .groups(Set.of("User"))
+                .expiresIn(Duration.ofMinutes(20))
+                .sign();
+    }
+
+    /**
+     * Sucht einen User anhand seiner E‑Mail-Adresse.
+     *
+     * @param email Die E‑Mail, nach der gesucht wird.
+     * @return Der gefundene User oder null, wenn keiner existiert.
+     */
+    public User findByEmail(String email) {
+        return User.find("email", email).firstResult();
     }
 }
