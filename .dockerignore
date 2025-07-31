@@ -1,5 +1,9 @@
+# 1) Alles erstmal ignorieren
 *
-!target/*-runner
+
+# 2) Aber Dockerfile und das target-Verzeichnis dürfen rein
+!Dockerfile
+!target/
+
+# 3) Und in target nur die Runner-JAR (nicht den Rest)
 !target/*-runner.jar
-!target/lib/*
-!target/quarkus-app/*
