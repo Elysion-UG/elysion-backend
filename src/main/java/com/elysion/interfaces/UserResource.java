@@ -35,7 +35,9 @@ public class UserResource {
     }
 
     public static class LoginRequest {
+        @NotBlank @Email
         public String email;
+        @NotBlank @Size(min=8)
         public String password;
     }
 
@@ -57,7 +59,7 @@ public class UserResource {
     @POST
     @Path("/login")
     @PermitAll
-    public Response login(LoginRequest request) {
+    public Response login(@Valid LoginRequest request) {
         try {
             User user = userService.authenticate(request.email, request.password);
             String token = userService.generateJwt(user);
