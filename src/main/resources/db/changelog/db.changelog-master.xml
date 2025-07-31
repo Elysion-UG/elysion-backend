@@ -40,4 +40,16 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="4-add-double-opt-in-fields" author="karl">
+        <addColumn tableName="users">
+            <column name="active" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="activation_token" type="VARCHAR(255)">
+                <constraints unique="true"/>
+            </column>
+            <column name="activation_token_created" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
 </databaseChangeLog>

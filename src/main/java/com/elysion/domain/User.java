@@ -29,6 +29,14 @@ public class User extends PanacheEntityBase {
     @Column(name = "role", nullable = false)
     public String role;
 
+    @Column(name = "active", nullable = false)
+    public boolean active = false;
+
+    @Column(name = "activation_token", unique = true)
+    public String activationToken;
+
+    @Column(name = "activation_token_created")
+    public OffsetDateTime activationTokenCreated;
 
     // Convenience constructor
     public User() {

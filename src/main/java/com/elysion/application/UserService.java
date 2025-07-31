@@ -17,6 +17,9 @@ public class UserService {
     @Inject
     PasswordService passwordService;
 
+    @Inject
+    MailService mailService;
+
     public User register(String email, String plainPassword) {
         if (User.find("email", email).firstResult() != null) {
             throw new IllegalArgumentException("E-Mail already in use");
@@ -31,11 +34,16 @@ public class UserService {
         user.salt = salt;
         user.passwordHash = hash;
         user.createdAt = OffsetDateTime.now();
-
-        // hier erstmal default Rolle als User setzten:
         user.role = "User";
 
+        // ✨ DOI
+        user.active = false;
+        user.activationToken = UUID.randomUUID().toString();
+        user.activationTokenCreated = OffsetDateTime.now();
+
         user.persist();
+
+        mailService.sendActivationMail(user); // ✉️ Dummy-Funktion, siehe unten
 
         return user;
     }
@@ -44,6 +52,9 @@ public class UserService {
         User user = User.find("email", email).firstResult();
         if (user == null || !passwordService.verifyPassword(plainPassword, user.salt, user.passwordHash)) {
             throw new IllegalArgumentException("Invalid credentials");
+        }
+        if (!user.active) {
+            throw new IllegalArgumentException("Account not activated");
         }
         return user;
     }

@@ -14,6 +14,7 @@ import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.*;
 import org.jboss.logging.Logger;
 
+import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -71,6 +72,36 @@ public class UserResource {
                     .entity(Map.of("error", e.getMessage()))
                     .build();
         }
+    }
+
+    @GET
+    @Path("/confirm")
+    @PermitAll
+    public Response confirm(@QueryParam("token") String token) {
+        if (token == null || token.isBlank()) {
+            return Response.status(Response.Status.BAD_REQUEST)
+                    .entity(Map.of("error", "Token is missing")).build();
+        }
+
+        User user = User.find("activationToken", token).firstResult();
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", "Invalid token")).build();
+        }
+
+        // Optional: Ablaufprüfung
+        if (user.activationTokenCreated != null &&
+                user.activationTokenCreated.isBefore(OffsetDateTime.now().minusHours(24))) {
+            return Response.status(Response.Status.GONE)
+                    .entity(Map.of("error", "Token expired")).build();
+        }
+
+        user.active = true;
+        user.activationToken = null;
+        user.activationTokenCreated = null;
+        user.persist();
+
+        return Response.ok(Map.of("message", "Account successfully activated")).build();
     }
 
     @GET
