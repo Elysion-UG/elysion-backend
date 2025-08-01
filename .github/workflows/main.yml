@@ -26,7 +26,7 @@ jobs:
       run: tar -czvf target/user-service-${{ github.sha }}.tar.gz -C target my-application.jar  # Optional, falls du das JAR als TAR verpacken möchtest
 
     - name: Upload JAR or TAR as Artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3  # Aktualisierte Version auf v3
       with:
         name: user-service-${{ github.sha }}
         path: target/*.jar  # Oder verweise hier auf das TAR, wenn du das hochladen möchtest
