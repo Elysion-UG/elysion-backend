@@ -42,6 +42,19 @@ public class UserResource {
         public String password;
     }
 
+    public static class ChangeEmailRequest {
+        @NotBlank @Email
+        public String newEmail;
+    }
+
+    public static class ChangePasswordRequest {
+        @NotBlank
+        public String currentPassword;
+
+        @NotBlank @Size(min = 8)
+        public String newPassword;
+    }
+
     @POST
     @Path("/register")
     @Transactional
@@ -103,6 +116,43 @@ public class UserResource {
 
         return Response.ok(Map.of("message", "Account successfully activated")).build();
     }
+
+    @PUT
+    @Path("/email")
+    @RolesAllowed("User")
+    @Transactional
+    public Response changeEmail(@Valid ChangeEmailRequest request, @Context SecurityContext ctx) {
+        String email = ctx.getUserPrincipal().getName();
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        try {
+            userService.changeEmail(user, request.newEmail);
+            return Response.ok(Map.of("message", "E-Mail updated")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.CONFLICT).entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
+    @PUT
+    @Path("/password")
+    @RolesAllowed("User")
+    @Transactional
+    public Response changePassword(@Valid ChangePasswordRequest request, @Context SecurityContext ctx) {
+        String email = ctx.getUserPrincipal().getName();
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return Response.status(Response.Status.NOT_FOUND).build();
+        }
+        try {
+            userService.changePassword(user, request.currentPassword, request.newPassword);
+            return Response.ok(Map.of("message", "Password updated")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(Map.of("error", e.getMessage())).build();
+        }
+    }
+
 
     @GET
     @Path("/me")

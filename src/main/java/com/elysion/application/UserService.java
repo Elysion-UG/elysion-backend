@@ -48,6 +48,25 @@ public class UserService {
         return user;
     }
 
+    public void changeEmail(User user, String newEmail) {
+        if (User.find("email", newEmail).firstResult() != null) {
+            throw new IllegalArgumentException("E-Mail already in use");
+        }
+        user.email = newEmail;
+        user.persist();
+    }
+
+    public void changePassword(User user, String currentPassword, String newPassword) {
+        if (!passwordService.verifyPassword(currentPassword, user.salt, user.passwordHash)) {
+            throw new IllegalArgumentException("Incorrect current password");
+        }
+        String newSalt = passwordService.generateSalt();
+        String newHash = passwordService.hashPassword(newPassword, newSalt);
+        user.salt = newSalt;
+        user.passwordHash = newHash;
+        user.persist();
+    }
+
     public User authenticate(String email, String plainPassword) {
         User user = User.find("email", email).firstResult();
         if (user == null || !passwordService.verifyPassword(plainPassword, user.salt, user.passwordHash)) {
