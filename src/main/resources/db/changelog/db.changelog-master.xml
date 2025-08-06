@@ -52,4 +52,13 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="5-add-pending-email" author="karl">
+        <addColumn tableName="users">
+            <column name="pending_email" type="VARCHAR(255)"/>
+            <column name="email_activation_token" type="VARCHAR(255)"/>
+            <column name="email_activation_token_created" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
+
+
 </databaseChangeLog>

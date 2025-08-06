@@ -32,6 +32,9 @@ public class User extends PanacheEntityBase {
     @Column(name = "active", nullable = false)
     public boolean active = false;
 
+    @Column(name = "pending_email", unique = true)
+    public String pendingEmail;
+
     @Column(name = "activation_token", unique = true)
     public String activationToken;
 

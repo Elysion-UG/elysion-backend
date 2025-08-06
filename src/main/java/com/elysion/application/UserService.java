@@ -49,12 +49,20 @@ public class UserService {
     }
 
     public void changeEmail(User user, String newEmail) {
-        if (User.find("email", newEmail).firstResult() != null) {
+        if (User.find("email", newEmail).firstResult() != null ||
+                User.find("pendingEmail", newEmail).firstResult() != null) {
             throw new IllegalArgumentException("E-Mail already in use");
         }
-        user.email = newEmail;
+        // Statt sofortiges Überschreiben:
+        user.pendingEmail = newEmail;
+        user.activationToken = UUID.randomUUID().toString();
+        user.activationTokenCreated = OffsetDateTime.now();
         user.persist();
+
+        // E-Mail an die neue Adresse senden
+        mailService.sendEmailChangeConfirmation(user);
     }
+
 
     public void changePassword(User user, String currentPassword, String newPassword) {
         if (!passwordService.verifyPassword(currentPassword, user.salt, user.passwordHash)) {
