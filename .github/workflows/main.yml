@@ -1,0 +1,33 @@
+name: Build and Upload JAR
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up JDK
+      uses: actions/setup-java@v2
+      with:
+        java-version: '21'
+        distribution: 'zulu'
+
+    - name: Build the JAR file
+      run: mvn clean package -DskipTests
+
+    - name: Create TAR from JAR
+      run: tar -czvf target/user-service-${{ github.sha }}.tar.gz -C target user-service-1.0.0-SNAPSHOT-runner.jar
+
+    - name: Upload JAR or TAR as Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: user-service-${{ github.sha }}
+        path: target/*.jar  # Oder verweise hier auf das TAR, wenn du das hochladen möchtest
