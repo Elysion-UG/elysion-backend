@@ -20,7 +20,7 @@ public class UserService {
     @Inject
     MailService mailService;
 
-    public User register(String email, String plainPassword) {
+    public User register(String email, String plainPassword, String firstName, String lastName) {
         if (User.find("email", email).firstResult() != null) {
             throw new IllegalArgumentException("E-Mail already in use");
         }
@@ -35,6 +35,10 @@ public class UserService {
         user.passwordHash = hash;
         user.createdAt = OffsetDateTime.now();
         user.role = "User";
+
+        // Neu:
+        user.firstName = firstName;
+        user.lastName = lastName;
 
         // ✨ DOI
         user.active = false;

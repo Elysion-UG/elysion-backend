@@ -60,5 +60,23 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="6-add-first-last-name" author="karl">
+        <!-- Nur ausführen, wenn Spalten noch nicht existieren -->
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="users" columnName="first_name"/>
+            </not>
+        </preConditions>
+
+        <!-- Spalten anlegen und für bestehende Datensätze mit leerem String initialisieren -->
+        <addColumn tableName="users">
+            <column name="first_name" type="VARCHAR(100)" defaultValue=""/>
+            <column name="last_name"  type="VARCHAR(100)" defaultValue=""/>
+        </addColumn>
+
+        <!-- NOT NULL Constraint nach dem Anlegen -->
+        <addNotNullConstraint tableName="users" columnName="first_name"/>
+        <addNotNullConstraint tableName="users" columnName="last_name"/>
+    </changeSet>
 
 </databaseChangeLog>

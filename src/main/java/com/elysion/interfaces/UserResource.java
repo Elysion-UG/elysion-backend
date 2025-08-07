@@ -18,6 +18,8 @@ import java.time.OffsetDateTime;
 import java.util.Map;
 import java.util.UUID;
 
+import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
+
 @Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
@@ -33,6 +35,12 @@ public class UserResource {
         public String email;
         @NotBlank @Size(min=8)
         public String password;
+
+        @NotBlank
+        public String firstName;
+
+        @NotBlank
+        public String lastName;
     }
 
     public static class LoginRequest {
@@ -40,6 +48,13 @@ public class UserResource {
         public String email;
         @NotBlank @Size(min=8)
         public String password;
+    }
+
+    public static class ChangeProfileRequest {
+        @NotBlank
+        public String firstName;
+        @NotBlank
+        public String lastName;
     }
 
     public static class ChangeEmailRequest {
@@ -61,7 +76,7 @@ public class UserResource {
     public Response register(@Valid RegisterRequest request) {
         LOG.info("Register request: " + request.toString());
         try {
-            User user = userService.register(request.email, request.password);
+            User user = userService.register(request.email, request.password, request.firstName, request.lastName);
             LOG.info("Register successful");
             return Response.status(Response.Status.CREATED).entity(user.id).build();
         } catch (IllegalArgumentException e) {
@@ -97,7 +112,7 @@ public class UserResource {
         }
         User user = User.find("emailActivationToken", token).firstResult();
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND)
+            return Response.status(NOT_FOUND)
                     .entity(Map.of("error","Invalid token")).build();
         }
         // Optional: Ablauf prüfen wie in /confirm
@@ -124,7 +139,7 @@ public class UserResource {
         String email = ctx.getUserPrincipal().getName();
         User user = userService.findByEmail(email);
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(NOT_FOUND).build();
         }
         try {
             userService.changeEmail(user, request.newEmail);
@@ -142,7 +157,7 @@ public class UserResource {
         String email = ctx.getUserPrincipal().getName();
         User user = userService.findByEmail(email);
         if (user == null) {
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(NOT_FOUND).build();
         }
         try {
             userService.changePassword(user, request.currentPassword, request.newPassword);
@@ -152,6 +167,20 @@ public class UserResource {
         }
     }
 
+    @PUT
+    @Path("/profile")
+    @RolesAllowed("User")
+    public Response changeProfile(@Valid ChangeProfileRequest req,
+                                  @Context SecurityContext ctx) {
+        User user = userService.findByEmail(ctx.getUserPrincipal().getName());
+        if (user == null) {
+            return Response.status(NOT_FOUND).build();
+        }
+        user.firstName = req.firstName;
+        user.lastName = req.lastName;
+        user.persist();
+        return Response.ok(Map.of("message","Profile updated")).build();
+    }
 
     @GET
     @Path("/me")
@@ -161,7 +190,7 @@ public class UserResource {
         User user = userService.findByEmail(email);  // gibt null zurück, wenn nicht gefunden
         if (user == null) {
             // Kein User mit dieser E‑Mail – 404 Not Found
-            return Response.status(Response.Status.NOT_FOUND).build();
+            return Response.status(NOT_FOUND).build();
         }
         return Response.ok(user).build();
     }
