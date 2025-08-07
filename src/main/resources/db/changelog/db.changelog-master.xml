@@ -79,4 +79,30 @@
         <addNotNullConstraint tableName="users" columnName="last_name"/>
     </changeSet>
 
+    <changeSet id="7-create-sustainability-filter" author="karl">
+        <createTable tableName="sustainability_filter">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="filter_key" type="VARCHAR(50)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="label" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="icon" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="description" type="VARCHAR(500)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="examples" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="importance" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
 </databaseChangeLog>

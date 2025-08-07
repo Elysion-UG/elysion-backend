@@ -16,7 +16,6 @@ import org.jboss.logging.Logger;
 
 import java.time.OffsetDateTime;
 import java.util.Map;
-import java.util.UUID;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
