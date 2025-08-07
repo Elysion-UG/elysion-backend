@@ -1,11 +1,12 @@
 package com.elysion.domain;
 
+import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;
 import java.util.UUID;
 
 @Entity
 @Table(name = "sustainability_filter")
-public class SustainabilityFilter {
+public class SustainabilityFilter extends PanacheEntityBase {
 
     @Id
     @Column(name = "id", nullable = false, updatable = false)
