@@ -105,4 +105,33 @@
         </createTable>
     </changeSet>
 
+    <!-- in db/changelog/db.changelog-master.xml -->
+    <changeSet id="8-create-user-filter-prefs" author="karl">
+        <createTable tableName="user_sustainability_pref">
+            <!-- Surrogate PK -->
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <!-- FK auf User -->
+            <column name="user_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_pref_user"
+                             references="users(id)"/>
+            </column>
+            <!-- FK auf Filter -->
+            <column name="filter_id" type="UUID">
+                <constraints nullable="false" foreignKeyName="fk_pref_filter"
+                             references="sustainability_filter(id)"/>
+            </column>
+            <!-- Importance aus deinem Enum -->
+            <column name="importance" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+        <!-- Sicherstellen, dass pro (user,filter) nur ein Eintrag existiert -->
+        <addUniqueConstraint tableName="user_sustainability_pref"
+                             columnNames="user_id,filter_id"
+                             constraintName="uc_user_filter"/>
+    </changeSet>
+
+
 </databaseChangeLog>
