@@ -8,6 +8,7 @@ import jakarta.inject.Inject;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
@@ -90,13 +91,15 @@ public class UserService {
         return user;
     }
 
-    /** Erzeugt ein JWT mit 2‑Stunden‑Laufzeit und Gruppe "User" */
+    /** Erzeugt ein JWT mit 2-Stunden-Laufzeit und der Rolle aus dem User-Objekt */
     public String generateJwt(User user) {
-        return Jwt.issuer("my-issuer")
-                .upn(user.email)
-                .groups(Set.of(user.role))
-                .expiresIn(Duration.ofHours(2))
-                .sign();
+        return Jwt.issuer("elysion-user-service")          // Muss zu mp.jwt.verify.issuer passen
+                .upn(user.email)                         // User Principal Name
+                .subject(user.id.toString())             // Eindeutige User-ID
+                .groups(Set.of(user.role))               // Rollen
+                .claim("seller_ids", List.of())          // z. B. später Verkäufer-Zugriffsrechte
+                .expiresIn(Duration.ofHours(2))          // Ablaufzeit
+                .sign();                                 // Signiert mit deinem Private Key
     }
 
     /**
