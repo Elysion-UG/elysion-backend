@@ -47,7 +47,7 @@ import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 })
 public class UserResource {
 
-    private static final Logger LOG = Logger.getLogger(UserService.class); // ← hier definierst du LOG
+    private static final Logger LOG = Logger.getLogger(UserResource.class);
 
     @Inject
     UserService userService;
@@ -233,7 +233,7 @@ public class UserResource {
             return Response.status(Response.Status.BAD_REQUEST)
                     .entity(Map.of("error","Token is missing")).build();
         }
-        User user = User.find("emailActivationToken", token).firstResult();
+        User user = User.find("activationToken", token).firstResult();
         if (user == null) {
             return Response.status(NOT_FOUND)
                     .entity(Map.of("error","Invalid token")).build();

@@ -5,9 +5,11 @@ import com.elysion.security.PasswordService;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
+import jakarta.transaction.Transactional;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -93,13 +95,19 @@ public class UserService {
 
     /** Erzeugt ein JWT mit 2-Stunden-Laufzeit und der Rolle aus dem User-Objekt */
     public String generateJwt(User user) {
-        return Jwt.issuer("elysion-user-service")          // Muss zu mp.jwt.verify.issuer passen
-                .upn(user.email)                         // User Principal Name
-                .subject(user.id.toString())             // Eindeutige User-ID
-                .groups(Set.of(user.role))               // Rollen
-                .claim("seller_ids", List.of())          // z. B. später Verkäufer-Zugriffsrechte
-                .expiresIn(Duration.ofHours(2))          // Ablaufzeit
-                .sign();                                 // Signiert mit deinem Private Key
+        Set<String> groups = new HashSet<>();
+        groups.add("User"); // Basisrolle immer
+        if (user.role != null && !"User".equals(user.role)) {
+            groups.add(user.role); // z.B. "Seller" oder "Admin"
+        }
+
+        return Jwt.issuer("elysion-user-service")
+                .upn(user.email)
+                .subject(user.id.toString())
+                .groups(groups)
+                .audience("elysion-product-service")
+                .expiresIn(Duration.ofHours(2))
+                .sign();
     }
 
     /**
@@ -110,5 +118,19 @@ public class UserService {
      */
     public User findByEmail(String email) {
         return User.find("email", email).firstResult();
+    }
+
+    @Transactional
+    public User promoteToSeller(UUID userId) {
+        User user = User.findById(userId);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        if (!user.active) {
+            throw new IllegalStateException("User not activated");
+        }
+        user.role = "Seller";
+        user.persist();
+        return user;
     }
 }
