@@ -133,4 +133,14 @@ public class UserService {
         user.persist();
         return user;
     }
+
+    @Transactional
+    public User promoteToAdmin(UUID targetUserId) {
+        User u = User.findById(targetUserId);
+        if (u == null) throw new IllegalArgumentException("User not found");
+        if (!u.active) throw new IllegalStateException("User not activated");
+        u.role = "Admin";
+        u.persist();
+        return u;
+    }
 }
