@@ -1,35 +1,43 @@
 package com.elysion.tools;
 
-import org.mindrot.jbcrypt.BCrypt;
-
-import java.security.SecureRandom;
-import java.util.Base64;
+import com.elysion.security.PasswordService;
 
 public class HashTool {
+
     public static void main(String[] args) {
-        String password = System.getProperty("passwd"); // -Dpasswd=DeinPasswort
+        // Passwort per -Dpasswd=... reinreichen
+        String password = System.getProperty("passwd");
         if (password == null || password.isBlank()) {
-            System.err.println("Bitte gib -Dpasswd=<PASSWORD> mit.");
+            System.err.println("Fehler: Bitte mit -Dpasswd=<PASSWORD> starten.");
             System.exit(1);
         }
-        String pepper = System.getenv("PEPPER");
-        if (pepper == null || pepper.isBlank()) {
-            System.err.println("Bitte exportiere PEPPER in der Shell.");
+
+        // Optional: vorhandenes Salt per -Dsalt=... (Base64) vorgeben
+        String providedSalt = System.getProperty("salt");
+
+        try {
+            // Nutzt 1:1 deinen PasswordService (inkl. PEPPER aus Env, BCrypt Runden, Base64 usw.)
+            PasswordService ps = new PasswordService();
+
+            String salt = (providedSalt != null && !providedSalt.isBlank())
+                    ? providedSalt
+                    : ps.generateSalt();
+
+            String hash = ps.hashPassword(password, salt);
+
+            // Ausgabe für Liquibase-Insert
+            System.out.println("SALT=" + salt);
+            System.out.println("HASH=" + hash);
+
+            // Mini-Selfcheck
+            boolean ok = ps.verifyPassword(password, salt, hash);
+            System.out.println("VERIFY=" + ok);
+        } catch (IllegalStateException e) {
+            System.err.println("Fehler: " + e.getMessage() + " (PEPPER setzen!)");
             System.exit(2);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(3);
         }
-
-        // eigenes Salt (separat gespeichert)
-        byte[] saltBytes = new byte[16];
-        new SecureRandom().nextBytes(saltBytes);
-        String salt = Base64.getUrlEncoder().withoutPadding().encodeToString(saltBytes);
-
-        // kombiniere wie in deinem PasswordService (wichtig: gleiche Reihenfolge!)
-        String combined = pepper + password + salt;
-
-        // bcrypt mit z.B. 12 Rounds (wie in deinem Service)
-        String bcrypt = BCrypt.hashpw(combined, BCrypt.gensalt(12));
-
-        System.out.println("SALT=" + salt);
-        System.out.println("HASH=" + bcrypt);
     }
 }

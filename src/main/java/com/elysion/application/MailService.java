@@ -7,7 +7,7 @@ import jakarta.enterprise.context.ApplicationScoped;
 public class MailService {
 
     public void sendActivationMail(User user) {
-        String activationLink = "https://100.66.219.89:8080/confirm-email?token=" + user.activationToken;
+        String activationLink = "https://100.66.219.89:8080/users/confirm-email?token=" + user.activationToken;
         System.out.println("👉 Bestätigungslink: " + activationLink);
 
         // Oder echtes E-Mail-System:

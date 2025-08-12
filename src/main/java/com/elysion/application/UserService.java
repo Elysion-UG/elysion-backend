@@ -121,6 +121,27 @@ public class UserService {
     }
 
     @Transactional
+    public User confirmEmail(String token) {
+        User user = User.find("activationToken", token).firstResult();
+        if (user == null) {
+            throw new IllegalArgumentException("Invalid token");
+        }
+        if (user.activationTokenCreated.isBefore(OffsetDateTime.now().minusHours(24))) {
+            throw new IllegalStateException("Token expired");
+        }
+
+        if (user.pendingEmail != null) {
+            user.email = user.pendingEmail;
+            user.pendingEmail = null;
+        }
+        user.active = true;
+        user.activationToken = null;
+        user.activationTokenCreated = null;
+        user.persist();
+        return user;
+    }
+
+    @Transactional
     public User promoteToSeller(UUID userId) {
         User user = User.findById(userId);
         if (user == null) {
@@ -142,5 +163,28 @@ public class UserService {
         u.role = "Admin";
         u.persist();
         return u;
+    }
+
+    @Transactional
+    public void resendActivationToken(String email) {
+        User user = User.find("email", email).firstResult();
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        if (user.active) {
+            throw new IllegalStateException("Account already activated");
+        }
+
+        // Optional: Rate Limit (z. B. nicht öfter als alle 15 Minuten)
+        if (user.activationTokenCreated != null &&
+                user.activationTokenCreated.isAfter(OffsetDateTime.now().minusMinutes(15))) {
+            throw new IllegalStateException("Token was recently sent");
+        }
+
+        user.activationToken = UUID.randomUUID().toString();
+        user.activationTokenCreated = OffsetDateTime.now();
+        user.persist();
+
+        mailService.sendActivationMail(user);
     }
 }

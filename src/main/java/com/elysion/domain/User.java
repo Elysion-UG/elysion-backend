@@ -59,4 +59,9 @@ public class User extends PanacheEntityBase {
         this.role = role;
         this.createdAt = createdAt;
     }
+
+    @Override
+    public String toString() {
+        return "ID: {id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", email=" + email + ", pendingmail=" + pendingEmail + ", activ=" + active;
+    }
 }

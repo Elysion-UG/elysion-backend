@@ -13,12 +13,15 @@ import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.SecurityContext;
+import org.jboss.logging.Logger;
 
 import java.util.Map;
 import java.util.UUID;
 
 @Path("/users")
 public class UserAdminResource {
+
+    private static final Logger LOG = Logger.getLogger(UserAdminResource.class);
 
     @Inject
     UserService userService;
@@ -37,8 +40,10 @@ public class UserAdminResource {
     @RolesAllowed("Admin")
     @Transactional
     public Response makeSeller(@PathParam("id") UUID userId) {
+        LOG.info("makeSeller called: " +  userId);
         try {
             User u = userService.promoteToSeller(userId);
+            LOG.info("makeSeller called: " +  u);
             return Response.ok(Map.of(
                     "message", "Role updated to Seller",
                     "userId", u.id.toString()

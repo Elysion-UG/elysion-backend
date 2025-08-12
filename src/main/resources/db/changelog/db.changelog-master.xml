@@ -133,5 +133,44 @@
                              constraintName="uc_user_filter"/>
     </changeSet>
 
+    <changeSet id="9-bootstrap-initial-admin" author="you" context="bootstrap">
+        <!-- Nur anlegen, wenn die E-Mail noch nicht existiert -->
+        <preConditions onFail="MARK_RAN">
+            <sqlCheck expectedResult="0">
+                SELECT COUNT(*) FROM users WHERE email = 'admin@example.com'
+            </sqlCheck>
+        </preConditions>
+
+        <insert tableName="users">
+            <!-- feste UUID (kannst du ändern, aber stabil lassen) -->
+            <column name="id" value="11111111-2222-3333-4444-555555555555"/>
+
+            <column name="first_name" value="System"/>
+            <column name="last_name"  value="Admin"/>
+
+            <column name="email" value="admin@elysion.com"/>
+
+            <!-- Aus dem HashTool -->
+            <column name="password_hash" value="$2a$12$M8Q35jYDH0VxrQEAHR4OOOyNKG8G5SZSmMzhURXSgvYv8FY4oDvya"/>
+            <column name="salt"          value="bEg+eoewDQ9jlY7Jom9mMQ=="/>
+
+            <column name="role" value="Admin"/>
+            <column name="active" valueBoolean="true"/>
+
+            <column name="created_at" valueComputed="CURRENT_TIMESTAMP"/>
+
+            <!-- optionale Felder leer lassen -->
+            <!-- pending_email, activation_token, activation_token_created -->
+        </insert>
+
+        <!-- Optional: Rollback (löscht genau diesen Admin wieder) -->
+        <rollback>
+            <delete tableName="users">
+                <where>id = '11111111-2222-3333-4444-555555555555'</where>
+            </delete>
+        </rollback>
+    </changeSet>
+
+
 
 </databaseChangeLog>

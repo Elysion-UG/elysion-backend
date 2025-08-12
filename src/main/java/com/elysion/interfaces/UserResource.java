@@ -85,6 +85,8 @@ public class UserResource {
         @Schema(required = true, minLength = 8)
         @NotBlank @Size(min=8)
         public String password;
+
+        @Override public String toString() { return email + " " + password; }
     }
 
     @Schema(name = "ChangeProfileRequest", description = "Profiländerung")
@@ -194,13 +196,16 @@ public class UserResource {
             )
     })
     public Response login(@Valid LoginRequest request) {
+        LOG.info("Login request: " + request.toString());
         try {
             User user = userService.authenticate(request.email, request.password);
             String token = userService.generateJwt(user);
+            LOG.info("Login successful");
             return Response.ok(Map.of("token", token))
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .build();
         } catch (IllegalArgumentException e) {
+            LOG.error(e.getMessage());
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("error", e.getMessage()))
                     .build();
@@ -229,29 +234,42 @@ public class UserResource {
                             examples = @ExampleObject(value = "{\"error\":\"Token expired\"}")))
     })
     public Response confirmEmail(@QueryParam("token") String token) {
-        if (token == null || token.isBlank()) {
-            return Response.status(Response.Status.BAD_REQUEST)
-                    .entity(Map.of("error","Token is missing")).build();
+        LOG.info("Confirm email request: " + token);
+        try {
+            userService.confirmEmail(token);
+            return Response.ok(Map.of("message","E-Mail erfolgreich bestätigt")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND).entity(Map.of("error", e.getMessage())).build();
+        } catch (IllegalStateException e) {
+            return Response.status(Response.Status.GONE).entity(Map.of("error", e.getMessage())).build();
         }
-        User user = User.find("activationToken", token).firstResult();
-        if (user == null) {
-            return Response.status(NOT_FOUND)
-                    .entity(Map.of("error","Invalid token")).build();
-        }
-        // Optional: Ablauf prüfen wie in /confirm
-        if (user.activationTokenCreated.isBefore(OffsetDateTime.now().minusHours(24))) {
-            return Response.status(Response.Status.GONE)
-                    .entity(Map.of("error","Token expired")).build();
-        }
+    }
 
-        // Tatsächlichen Wechsel jetzt durchführen
-        user.email = user.pendingEmail;
-        user.pendingEmail = null;
-        user.activationToken = null;
-        user.activationTokenCreated = null;
-        user.persist();
-
-        return Response.ok(Map.of("message","E-Mail erfolgreich geändert")).build();
+    @POST
+    @Path("/resend-activation")
+    @PermitAll
+    @Transactional
+    @Operation(
+            summary = "Neuen Aktivierungslink anfordern",
+            description = "Sendet einen neuen Aktivierungslink an einen nicht aktivierten Account."
+    )
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Neuer Token gesendet"),
+            @APIResponse(responseCode = "404", description = "User nicht gefunden"),
+            @APIResponse(responseCode = "409", description = "Bereits aktiv")
+    })
+    public Response resendActivation(@QueryParam("email") String email) {
+        LOG.info("Resend activation request: " + email);
+        try {
+            userService.resendActivationToken(email);
+            return Response.ok(Map.of("message", "Neuer Aktivierungslink gesendet")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.NOT_FOUND)
+                    .entity(Map.of("error", e.getMessage())).build();
+        } catch (IllegalStateException e) {
+            return Response.status(Response.Status.CONFLICT)
+                    .entity(Map.of("error", e.getMessage())).build();
+        }
     }
 
     @PUT
