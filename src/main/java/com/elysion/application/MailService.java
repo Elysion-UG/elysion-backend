@@ -20,7 +20,7 @@ public class MailService {
      */
     public void sendEmailChangeConfirmation(User user) {
         String confirmLink = "https://100.66.219.89:8080/users/confirm-email?token=" + user.activationToken;
-        System.out.println("👉 Bestätigungslink für neue E-Mail: " + confirmLink);
+        System.out.println("👉 Bestätigungslink für neue E-Mails: " + confirmLink);
 
         // Bei echtem Setup:
         // mailer.send(Mail.withText(
