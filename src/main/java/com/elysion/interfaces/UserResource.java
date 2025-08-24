@@ -252,7 +252,7 @@ public class UserResource {
     @Path("/confirm-email")
     @PermitAll
     @Operation(
-            summary = "E-Mail-Bestätigung durchführen",
+            summary = "E-Mail-Bestätigung durchführen mit der API",
             description = "Bestätigt eine ausstehende E-Mail-Änderung über den Token."
     )
     @APIResponses({
