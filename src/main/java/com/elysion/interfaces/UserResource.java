@@ -168,31 +168,67 @@ public class UserResource {
     @PermitAll
     @Operation(
             summary = "Login",
-            description = "Authentifiziert den User und liefert ein JWT zurück."
+            description = """
+            Authentifiziert den Benutzer mit E-Mail und Passwort und liefert ein JWT zurück.
+            Das JWT wird zusätzlich im Response-Header 'Authorization: Bearer <JWT>' ausgegeben.
+            """
     )
     @RequestBody(
             description = "Login-Daten",
             content = @Content(
                     schema = @Schema(implementation = LoginRequest.class),
-                    examples = @ExampleObject(value = "{\"email\":\"alice@example.com\",\"password\":\"Str0ngP@ssword!\"}")
-            )
+                    examples = {
+                            @ExampleObject(
+                                    name = "Standard",
+                                    summary = "Gültige Credentials",
+                                    value = "{\"email\":\"alice@example.com\",\"password\":\"Str0ngP@ssword!\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "Falsches Passwort",
+                                    summary = "Wird 401 zurückgeben",
+                                    value = "{\"email\":\"alice@example.com\",\"password\":\"wrongPass123\"}"
+                            )
+                    }
+            ),
+            required = true
     )
     @APIResponses({
             @APIResponse(
                     responseCode = "200",
                     description = "Login erfolgreich",
-                    content = @Content(mediaType = "application/json", examples = @ExampleObject(
-                            value = "{\"token\":\"<JWT>\"}"
-                    )),
+                    content = @Content(
+                            examples = @ExampleObject(
+                                    name = "Erfolgreiche Antwort",
+                                    value = """
+                    {
+                        "token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpc3MiOiJlbHlzaW9uLXVzZXItc2VydmljZSIsInVwbiI6InZlcmthdWZlckBlbHlzaW9uLmNvbSIsInN1YiI6IjIyNmU5ZjBlLTdhYzgtNGJmNC1iZjVkLTQyNDU3OWY1NzlmOCIsImdyb3VwcyI6WyJVc2VyIiwiU2VsbGVyIl0sImF1ZCI6ImVseXNpb24tcHJvZHVjdC1zZXJ2aWNlIiwiaWF0IjoxNzU2MDU0ODAyLCJleHAiOjE3NTYwNjIwMDIsImp0aSI6IjBhNjA5NTYwLTdlN2QtNGI2ZC1hMmU0LTM1MDY4Njk3YzY2NSJ9.HOfWYxvvdXw1jNInPwEf5y178a2_BQ2jHYzL1Vy22T7GyHaTqLogXNb_PnCeZmpsL5YKFYng_XszU0jmJ-amJ6m6mm9Hw3A_TWrOmK52j9oFCKuZClvYSYRdX1kh0UkDOJPDYoP5-E705pWPPnS_wLn-o_pCqVPfmDUKEAHPXC-FAcr3Vn5z9KK24IoZLx9h76sdJsjwUY3WiNh8C3QbacPdqavZvJOCLz0tMh1hKCovkbSGgGuRugni_bciZq6tjHbF52eaGVpNTkd-DpmMUc9WyIEGwEAA1ZLzm7AlmdZCX8Z2t9MeayI6RHRfIndSHImK7I9VdXkUQg7_xR0jqg"
+                    }
+                    """
+                            )
+                    ),
                     headers = {
-                            @Header(name = HttpHeaders.AUTHORIZATION, description = "Bearer <JWT>", required = true)
+                            @Header(
+                                    name = HttpHeaders.AUTHORIZATION,
+                                    description = "JWT im Bearer-Format (auch im Body enthalten)",
+                                    required = true
+                            )
                     }
             ),
             @APIResponse(
                     responseCode = "401",
-                    description = "Unauthorized",
-                    content = @Content(mediaType = "application/json",
-                            examples = @ExampleObject(value = "{\"error\":\"Invalid credentials\"}"))
+                    description = "Unauthorized – ungültige Anmeldedaten",
+                    content = @Content(
+                            examples = {
+                                    @ExampleObject(
+                                            name = "InvalidCredentials",
+                                            value = """
+                        {
+                            "error": "Invalid credentials"
+                        }
+                        """
+                                    )
+                            }
+                    )
             )
     })
     public Response login(@Valid LoginRequest request) {
