@@ -53,6 +53,21 @@ You can then execute your native executable with: `./target/user-service-1.0.0-S
 
 If you want to learn more about building native executables, please consult <https://quarkus.io/guides/maven-tooling>.
 
+## Project Management
+
+This repository is configured for story point management using GitHub Projects:
+
+- **[Quick Start Guide](docs/project-management-quickstart.md)** - Get started in 5 minutes
+- **[Full Setup Guide](docs/github-projects-setup.md)** - Comprehensive setup instructions
+- **Issue Templates** - Use the provided templates for User Stories, Tasks, and Bug Reports with story point estimation
+
+### Creating Issues with Story Points
+1. Go to "Issues" → "New issue"
+2. Choose the appropriate template (User Story, Task, or Bug Report)
+3. Fill in the story points field using the Fibonacci sequence (1, 2, 3, 5, 8, 13, 21)
+4. Set priority and other relevant fields
+5. The issue will automatically be added to your GitHub Project
+
 ## Related Guides
 
 - Hibernate ORM with Panache ([guide](https://quarkus.io/guides/hibernate-orm-panache)): Simplify your persistence code for Hibernate ORM via the active record or the repository pattern

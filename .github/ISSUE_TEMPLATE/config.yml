@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/Elysion-UG/elysion-backend/blob/main/docs/github-projects-setup.md
+    about: Learn how to set up GitHub Projects for story point management
+  - name: 💬 Discussion
+    url: https://github.com/Elysion-UG/elysion-backend/discussions
+    about: Ask questions and discuss ideas with the community

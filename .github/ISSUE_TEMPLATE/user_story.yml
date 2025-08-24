@@ -1,0 +1,119 @@
+name: User Story
+description: Create a user story with story points for project planning
+title: "[STORY] "
+labels: ["user-story"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## User Story Template
+        Please fill out the following information for this user story.
+        
+  - type: input
+    id: story-title
+    attributes:
+      label: Story Title
+      description: Brief, descriptive title for this user story
+      placeholder: "As a [user type], I want [functionality] so that [benefit]"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: story-description
+    attributes:
+      label: Story Description
+      description: Detailed description of the user story
+      placeholder: |
+        **As a** [type of user]
+        **I want** [some goal]
+        **So that** [some reason/benefit]
+        
+        ### Additional Details:
+        [Any additional context or requirements]
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: story-points
+    attributes:
+      label: Story Points
+      description: Estimated effort for this story (Fibonacci sequence)
+      options:
+        - "1 - Very Small"
+        - "2 - Small" 
+        - "3 - Medium Small"
+        - "5 - Medium"
+        - "8 - Large"
+        - "13 - Very Large"
+        - "21 - Extra Large"
+        - "? - Needs Discussion"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Business priority for this story
+      options:
+        - "Critical"
+        - "High"
+        - "Medium"
+        - "Low"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: acceptance-criteria
+    attributes:
+      label: Acceptance Criteria
+      description: Clear, testable criteria that define when this story is complete
+      placeholder: |
+        ### Acceptance Criteria:
+        - [ ] Criterion 1
+        - [ ] Criterion 2
+        - [ ] Criterion 3
+        
+        ### Definition of Done:
+        - [ ] Code reviewed
+        - [ ] Tests written and passing
+        - [ ] Documentation updated
+        - [ ] Deployed to staging
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-notes
+    attributes:
+      label: Technical Notes
+      description: Any technical considerations, dependencies, or constraints
+      placeholder: |
+        ### Dependencies:
+        - Depends on: #issue_number
+        
+        ### Technical Considerations:
+        - Database changes required
+        - API changes needed
+        - Frontend integration points
+        
+        ### Resources:
+        - [Link to design mockups]
+        - [Link to API documentation]
+      
+  - type: checkboxes
+    id: story-type
+    attributes:
+      label: Story Type
+      description: What type of work does this story involve?
+      options:
+        - label: Frontend Development
+        - label: Backend Development  
+        - label: API Development
+        - label: Database Changes
+        - label: DevOps/Infrastructure
+        - label: Documentation
+        - label: Testing
+        - label: Bug Fix
+        - label: Performance Improvement
+        - label: Security Enhancement

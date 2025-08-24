@@ -1,0 +1,115 @@
+name: Task
+description: Create a task with story points for development work
+title: "[TASK] "
+labels: ["task"]
+assignees: []
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Task Template
+        Please fill out the following information for this development task.
+        
+  - type: input
+    id: task-title
+    attributes:
+      label: Task Title
+      description: Brief, descriptive title for this task
+      placeholder: "Implement [feature/component/fix]"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: task-description
+    attributes:
+      label: Task Description
+      description: Detailed description of what needs to be done
+      placeholder: |
+        ### Objective:
+        [Clear description of what needs to be accomplished]
+        
+        ### Context:
+        [Background information and why this task is needed]
+        
+        ### Requirements:
+        [Specific requirements or constraints]
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: story-points
+    attributes:
+      label: Story Points
+      description: Estimated effort for this task (Fibonacci sequence)
+      options:
+        - "1 - Very Small"
+        - "2 - Small" 
+        - "3 - Medium Small"
+        - "5 - Medium"
+        - "8 - Large"
+        - "13 - Very Large"
+        - "21 - Extra Large"
+        - "? - Needs Discussion"
+    validations:
+      required: true
+      
+  - type: dropdown
+    id: priority
+    attributes:
+      label: Priority
+      description: Priority level for this task
+      options:
+        - "Critical"
+        - "High"
+        - "Medium"
+        - "Low"
+    validations:
+      required: true
+      
+  - type: textarea
+    id: deliverables
+    attributes:
+      label: Deliverables
+      description: What should be delivered when this task is complete?
+      placeholder: |
+        ### Deliverables:
+        - [ ] Component/feature implemented
+        - [ ] Unit tests written
+        - [ ] Integration tests updated
+        - [ ] Documentation updated
+        - [ ] Code reviewed and merged
+    validations:
+      required: true
+      
+  - type: textarea
+    id: technical-approach
+    attributes:
+      label: Technical Approach
+      description: High-level approach or implementation notes
+      placeholder: |
+        ### Approach:
+        [How should this be implemented?]
+        
+        ### Files to modify:
+        - `src/main/java/...`
+        - `src/test/java/...`
+        
+        ### Dependencies:
+        - Depends on: #issue_number
+      
+  - type: checkboxes
+    id: task-type
+    attributes:
+      label: Task Type
+      description: What type of work does this task involve?
+      options:
+        - label: Frontend Development
+        - label: Backend Development  
+        - label: API Development
+        - label: Database Changes
+        - label: DevOps/Infrastructure
+        - label: Documentation
+        - label: Testing
+        - label: Refactoring
+        - label: Performance Optimization
+        - label: Security Enhancement

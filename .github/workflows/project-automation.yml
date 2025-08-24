@@ -1,0 +1,69 @@
+name: Auto-assign to Project
+
+on:
+  issues:
+    types: [opened]
+  pull_request:
+    types: [opened]
+
+jobs:
+  add-to-project:
+    name: Add issue/PR to project
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add to project
+        uses: actions/add-to-project@v0.5.0
+        with:
+          # The URL of the GitHub project to add issues/PRs to
+          # Replace PROJECT_NUMBER with your actual project number from the project URL
+          project-url: https://github.com/orgs/Elysion-UG/projects/PROJECT_NUMBER
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          
+  label-by-story-points:
+    name: Auto-label by story points
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'opened'
+    steps:
+      - name: Label by story points
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issueBody = context.payload.issue.body || '';
+            
+            // Extract story points from issue body
+            const storyPointsMatch = issueBody.match(/Story Points.*?(\d+)\s*-\s*(.*?)$/m);
+            
+            if (storyPointsMatch) {
+              const points = storyPointsMatch[1];
+              const labels = [];
+              
+              // Add story point label
+              labels.push(`sp-${points}`);
+              
+              // Add size label based on story points
+              if (points <= 2) {
+                labels.push('size/small');
+              } else if (points <= 5) {
+                labels.push('size/medium');
+              } else if (points <= 8) {
+                labels.push('size/large');
+              } else {
+                labels.push('size/extra-large');
+              }
+              
+              // Add priority label if found
+              const priorityMatch = issueBody.match(/Priority.*?(Critical|High|Medium|Low)/);
+              if (priorityMatch) {
+                labels.push(`priority/${priorityMatch[1].toLowerCase()}`);
+              }
+              
+              // Apply labels
+              if (labels.length > 0) {
+                await github.rest.issues.addLabels({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.issue.number,
+                  labels: labels
+                });
+              }
+            }
