@@ -469,7 +469,9 @@ public class UserResource {
             @APIResponse(responseCode = "409", description = "Token already used or expired"),
     })
     public Response loginWithIdent(@QueryParam("token") String token) {
+        LOG.info("Login with Ident-Token: " + token);
         if (token == null || token.isBlank()) {
+            LOG.debug("Token is null or blank");
             throw new WebApplicationException("Token is missing", 400);
         }
         try {
@@ -478,8 +480,10 @@ public class UserResource {
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
                     .build();
         } catch (IllegalArgumentException e) {
+            LOG.error("Invalid token", e);
             throw new WebApplicationException("Invalid token", 400);
         } catch (IllegalStateException e) {
+            LOG.error("Invalid token", e);
             // abgelaufen, schon benutzt, nicht aktiviert
             throw new WebApplicationException(e.getMessage(), 409);
         }
