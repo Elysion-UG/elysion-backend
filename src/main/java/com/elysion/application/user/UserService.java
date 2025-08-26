@@ -129,13 +129,12 @@ public class UserService {
             throw new IllegalStateException("Token expired");
         }
 
-        if (user.pendingEmail != null) {
-            user.email = user.pendingEmail;
-            user.pendingEmail = null;
-        }
         user.active = true;
-        user.activationToken = null;
-        user.activationTokenCreated = null;
+        user.activationTokenConfirmedAt = OffsetDateTime.now();
+
+        // WICHTIG: Token NICHT sofort nullen -> noch für den Einmal-Login nutzbar
+        // user.activationToken = null;  // <- absichtlich NICHT hier
+
         user.persist();
         return user;
     }
@@ -185,5 +184,36 @@ public class UserService {
         user.persist();
 
         mailService.sendActivationMail(user);
+    }
+
+    @Transactional
+    public String loginWithIdentToken(String token) {
+        User user = User.find("activationToken", token).firstResult();
+        if (user == null) throw new IllegalArgumentException("Invalid token");
+
+        if (!user.active || user.activationTokenConfirmedAt == null) {
+            throw new IllegalStateException("Account not activated");
+        }
+
+        // Sicherheitsfenster: z. B. 15 Minuten nach Bestätigung
+        if (user.activationTokenConfirmedAt.isBefore(OffsetDateTime.now().minusMinutes(15))) {
+            throw new IllegalStateException("Token exchange window expired");
+        }
+
+        // One-time use
+        if (user.activationTokenUsedAt != null) {
+            throw new IllegalStateException("Token already used");
+        }
+
+        user.activationTokenUsedAt = OffsetDateTime.now();
+
+        // Jetzt das Token invalidieren, damit es nie wieder auftaucht
+        user.activationToken = null;
+        user.activationTokenCreated = null;
+
+        user.persist();
+
+        // Reguläres Access-JWT für APIs
+        return generateJwt(user);
     }
 }

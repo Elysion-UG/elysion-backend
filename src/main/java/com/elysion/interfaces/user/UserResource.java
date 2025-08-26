@@ -226,8 +226,8 @@ public class UserResource {
                     }
             ),
             @APIResponse(
-                    responseCode = "401",
-                    description = "Unauthorized – ungültige Anmeldedaten",
+                    responseCode = "400",
+                    description = "Ungültige Anmededaten",
                     content = @Content(
                             examples = {
                                     @ExampleObject(
@@ -240,6 +240,9 @@ public class UserResource {
                                     )
                             }
                     )
+            ),
+            @APIResponse(
+
             )
     })
     public Response login(@Valid LoginRequest request) {
@@ -451,4 +454,35 @@ public class UserResource {
         }
         return Response.ok(user).build();
     }
+
+    @POST
+    @Path("/login-ident")
+    @PermitAll
+    @Operation(
+            summary = "Passwordless Login via Ident-Token nach E-Mail-Bestätigung",
+            description = "Tauscht ein bestätigtes Ident-Token einmalig in ein Access-JWT. Gültig z. B. 15 Minuten nach Bestätigung."
+    )
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "OK",
+                    content = @Content(examples = @ExampleObject(value = "{\"token\":\"<jwt>\"}"))),
+            @APIResponse(responseCode = "400", description = "Invalid token"),
+            @APIResponse(responseCode = "409", description = "Token already used or expired"),
+    })
+    public Response loginWithIdent(@QueryParam("token") String token) {
+        if (token == null || token.isBlank()) {
+            throw new WebApplicationException("Token is missing", 400);
+        }
+        try {
+            String jwt = userService.loginWithIdentToken(token);
+            return Response.ok(Map.of("token", jwt))
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt)
+                    .build();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException("Invalid token", 400);
+        } catch (IllegalStateException e) {
+            // abgelaufen, schon benutzt, nicht aktiviert
+            throw new WebApplicationException(e.getMessage(), 409);
+        }
+    }
+
 }

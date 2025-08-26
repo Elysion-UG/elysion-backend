@@ -171,6 +171,11 @@
         </rollback>
     </changeSet>
 
-
+    <changeSet id="18-add-activation-token-confirm-used" author="elysion">
+        <addColumn tableName="users">
+            <column name="activation_token_confirmed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="activation_token_used_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </addColumn>
+    </changeSet>
 
 </databaseChangeLog>
