@@ -259,6 +259,11 @@ public class UserResource {
             return Response.status(Response.Status.UNAUTHORIZED)
                     .entity(Map.of("error", e.getMessage()))
                     .build();
+        } catch (IllegalStateException e) {
+            // z. B. "Account not activated"
+            return Response.status(Response.Status.FORBIDDEN) // 403
+                    .entity(Map.of("error", e.getMessage(), "code", "ACCOUNT_NOT_ACTIVATED"))
+                    .build();
         }
     }
 
