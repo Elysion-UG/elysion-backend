@@ -1,10 +1,10 @@
-package com.elysion.interfaces;
+package com.elysion.interfaces.user;
 
-import com.elysion.application.UserSustainabilityPrefService;
-import com.elysion.application.UserService;
-import com.elysion.domain.Importance;
-import com.elysion.domain.User;
-import com.elysion.domain.UserSustainabilityPref;
+import com.elysion.application.user.UserSustainabilityPrefService;
+import com.elysion.application.user.UserService;
+import com.elysion.domain.user.Importance;
+import com.elysion.domain.user.User;
+import com.elysion.domain.user.UserSustainabilityPref;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.validation.Valid;

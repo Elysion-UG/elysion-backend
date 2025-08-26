@@ -1,6 +1,6 @@
-package com.elysion.application;
+package com.elysion.application.user;
 
-import com.elysion.domain.User;
+import com.elysion.domain.user.User;
 import jakarta.enterprise.context.ApplicationScoped;
 
 @ApplicationScoped

@@ -1,6 +1,6 @@
-package com.elysion.application;
+package com.elysion.application.user;
 
-import com.elysion.domain.SustainabilityFilter;
+import com.elysion.domain.user.SustainabilityFilter;
 import jakarta.enterprise.context.ApplicationScoped;
 import java.util.List;
 

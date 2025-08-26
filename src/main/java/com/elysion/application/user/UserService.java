@@ -1,6 +1,6 @@
-package com.elysion.application;
+package com.elysion.application.user;
 
-import com.elysion.domain.User;
+import com.elysion.domain.user.User;
 import com.elysion.security.PasswordService;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -10,7 +10,6 @@ import jakarta.transaction.Transactional;
 import java.time.Duration;
 import java.time.OffsetDateTime;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.elysion.domain;
+package com.elysion.domain.user;
 
 /**
  * Skala 1–4, wie in deinem Frontend definiert.

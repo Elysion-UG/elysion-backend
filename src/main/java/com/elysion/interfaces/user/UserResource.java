@@ -1,7 +1,7 @@
-package com.elysion.interfaces;
+package com.elysion.interfaces.user;
 
-import com.elysion.application.UserService;
-import com.elysion.domain.User;
+import com.elysion.application.user.UserService;
+import com.elysion.domain.user.User;
 import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
@@ -28,7 +28,6 @@ import org.eclipse.microprofile.openapi.annotations.security.SecuritySchemes;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
 import org.jboss.logging.Logger;
 
-import java.time.OffsetDateTime;
 import java.util.Map;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;

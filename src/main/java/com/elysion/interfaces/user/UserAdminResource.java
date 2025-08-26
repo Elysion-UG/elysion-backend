@@ -1,7 +1,7 @@
-package com.elysion.interfaces;
+package com.elysion.interfaces.user;
 
-import com.elysion.application.UserService;
-import com.elysion.domain.User;
+import com.elysion.application.user.UserService;
+import com.elysion.domain.user.User;
 import com.elysion.security.PasswordService;
 import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;

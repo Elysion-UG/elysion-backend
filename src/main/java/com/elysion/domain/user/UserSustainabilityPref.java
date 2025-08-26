@@ -1,4 +1,4 @@
-package com.elysion.domain;
+package com.elysion.domain.user;
 
 import io.quarkus.hibernate.orm.panache.PanacheEntityBase;
 import jakarta.persistence.*;

@@ -1,9 +1,9 @@
-package com.elysion.application;
+package com.elysion.application.user;
 
-import com.elysion.domain.Importance;
-import com.elysion.domain.SustainabilityFilter;
-import com.elysion.domain.User;
-import com.elysion.domain.UserSustainabilityPref;
+import com.elysion.domain.user.Importance;
+import com.elysion.domain.user.SustainabilityFilter;
+import com.elysion.domain.user.User;
+import com.elysion.domain.user.UserSustainabilityPref;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
 

@@ -1,7 +1,7 @@
-package com.elysion.interfaces;
+package com.elysion.interfaces.user;
 
-import com.elysion.application.SustainabilityFilterService;
-import com.elysion.domain.SustainabilityFilter;
+import com.elysion.application.user.SustainabilityFilterService;
+import com.elysion.domain.user.SustainabilityFilter;
 import jakarta.annotation.security.PermitAll;
 import jakarta.inject.Inject;
 import jakarta.ws.rs.GET;
