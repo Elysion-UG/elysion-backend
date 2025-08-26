@@ -89,5 +89,75 @@ public class UserEditProfileResource {
         }
     }
 
+    @PUT
+    @Path("/password")
+    @RolesAllowed("User")
+    @Transactional
+    @Operation(
+            summary = "Passwort ändern",
+            description = "Ändert das Passwort des eingeloggten Users."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @RequestBody(
+            content = @Content(
+                    schema = @Schema(implementation = UserResource.ChangePasswordRequest.class),
+                    examples = @ExampleObject(
+                            value = "{\"currentPassword\":\"Str0ngP@ssword!\",\"newPassword\":\"Ev3nStr0nger!\"}"
+                    )
+            )
+    )
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Passwort geändert",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"message\":\"Password updated\"}"))),
+            @APIResponse(responseCode = "401", description = "Current password falsch",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"error\":\"Invalid current password\"}"))),
+            @APIResponse(responseCode = "404", description = "User nicht gefunden")
+    })
+    public Response changePassword(@Valid UserResource.ChangePasswordRequest request, @Context SecurityContext ctx) {
+        String email = ctx.getUserPrincipal().getName();
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            return Response.status(NOT_FOUND).build();
+        }
+        try {
+            userService.changePassword(user, request.currentPassword, request.newPassword);
+            return Response.ok(Map.of("message", "Password updated")).build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED).entity(Map.of("error", e.getMessage())).build();
+        }
+    }
 
+    @PUT
+    @Path("/profile")
+    @RolesAllowed("User")
+    @Operation(
+            summary = "Profil ändern",
+            description = "Ändert Vor- und Nachnamen des eingeloggten Users."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @RequestBody(
+            content = @Content(
+                    schema = @Schema(implementation = UserResource.ChangeProfileRequest.class),
+                    examples = @ExampleObject(value = "{\"firstName\":\"Alice\",\"lastName\":\"Doe\"}")
+            )
+    )
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "Profil aktualisiert",
+                    content = @Content(mediaType = "application/json",
+                            examples = @ExampleObject(value = "{\"message\":\"Profile updated\"}"))),
+            @APIResponse(responseCode = "404", description = "User nicht gefunden")
+    })
+    public Response changeProfile(@Valid UserResource.ChangeProfileRequest req,
+                                  @Context SecurityContext ctx) {
+        User user = userService.findByEmail(ctx.getUserPrincipal().getName());
+        if (user == null) {
+            return Response.status(NOT_FOUND).build();
+        }
+        user.firstName = req.firstName;
+        user.lastName = req.lastName;
+        user.persist();
+        return Response.ok(Map.of("message","Profile updated")).build();
+    }
 }
