@@ -129,16 +129,29 @@ public class UserResource {
     @Path("/register")
     @Transactional
     @Operation(
-            summary = "Register new user",
-            description = "Erzeugt einen neuen User und sendet ggf. eine Verifizierungs-E-Mail."
+            summary = "Registriert einen neuen Nutzer",
+            description = """
+            Erzeugt einen neuen User und sendet eine Verifizierungs-Mail an die angegebene Adresse.
+            Hier müssen wir aktuell noch einen Weg hinzufügen, wie wir dafür sorgen können, das die Präferenzen direkt mit geliefert und gespeichert werden können.
+            Aktuell geht das nur nachdem der Nutzer sich Eingeloggt hat, aber er kann sich erst einloggen, nach dem Mail bestätigen. 
+            Da muss es noch einen besseren Weg geben.
+            """
     )
     @RequestBody(
             description = "Registrierungsdaten",
             content = @Content(
                     schema = @Schema(implementation = RegisterRequest.class),
                     examples = {
-                            @ExampleObject(name = "default",
-                                    value = "{\"email\":\"alice@example.com\",\"password\":\"Str0ngP@ssword!\",\"firstName\":\"Alice\",\"lastName\":\"Doe\"}")
+                            @ExampleObject(
+                                    name = "default",
+                                    summary = "Gültige Anfrage",
+                                    value = "{\"email\":\"alice@example.com\",\"password\":\"Str0ngP@ssword!\",\"firstName\":\"Alice\",\"lastName\":\"Doe\"}"
+                            ),
+                            @ExampleObject(
+                                    name = "wrong",
+                                    summary = "Ungültige Anfrage",
+                                    value = "{\"email\":\"alice@example.com\",\"password\":\"Str0ngP@ssword!\",\"firstName\":\"Alice\"}"
+                            )
                     }
             )
     )
@@ -189,8 +202,7 @@ public class UserResource {
                                     value = "{\"email\":\"alice@example.com\",\"password\":\"wrongPass123\"}"
                             )
                     }
-            ),
-            required = true
+            )
     )
     @APIResponses({
             @APIResponse(
