@@ -178,4 +178,86 @@
         </addColumn>
     </changeSet>
 
+    <changeSet id="19-create-user-token" author="karl">
+        <createTable tableName="user_token">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="user_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="token" type="VARCHAR(255)">
+                <constraints nullable="false" unique="true"/>
+            </column>
+            <column name="type" type="VARCHAR(20)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_at" type="TIMESTAMP WITH TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="confirmed_at" type="TIMESTAMP WITH TIME ZONE"/>
+            <column name="used_at" type="TIMESTAMP WITH TIME ZONE"/>
+        </createTable>
+
+        <addForeignKeyConstraint baseTableName="user_token"
+                                 baseColumnNames="user_id"
+                                 referencedTableName="users"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 constraintName="fk_user_token_user"/>
+
+        <!-- Ein „offenes“ Token je (user_id,type) -->
+        <sql>
+            CREATE UNIQUE INDEX IF NOT EXISTS ux_user_token_open_per_type
+                ON user_token (user_id, type)
+                WHERE used_at IS NULL;
+        </sql>
+
+        <createIndex indexName="ix_user_token_user" tableName="user_token">
+            <column name="user_id"/>
+        </createIndex>
+        <createIndex indexName="ix_user_token_type" tableName="user_token">
+            <column name="type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="20-migrate-existing-tokens" author="karl">
+        <!-- Activation -->
+        <sql>
+            INSERT INTO user_token (id, user_id, token, type, created_at, confirmed_at, used_at)
+            SELECT gen_random_uuid(), u.id, u.activation_token, 'ACTIVATION',
+                   COALESCE(u.activation_token_created, NOW()),
+                   u.activation_token_confirmed_at,
+                   u.activation_token_used_at
+            FROM users u
+            WHERE u.activation_token IS NOT NULL;
+        </sql>
+
+        <!-- Email-Change (falls genutzt) -->
+        <sql>
+            INSERT INTO user_token (id, user_id, token, type, created_at)
+            SELECT gen_random_uuid(), u.id, u.email_activation_token, 'EMAIL_CHANGE',
+                   COALESCE(u.email_activation_token_created, NOW())
+            FROM users u
+            WHERE u.email_activation_token IS NOT NULL;
+        </sql>
+    </changeSet>
+
+    <changeSet id="21-drop-user-token-columns" author="karl">
+        <preConditions onFail="MARK_RAN">
+            <or>
+                <columnExists tableName="users" columnName="activation_token"/>
+                <columnExists tableName="users" columnName="email_activation_token"/>
+            </or>
+        </preConditions>
+
+        <dropColumn tableName="users" columnName="activation_token"/>
+        <dropColumn tableName="users" columnName="activation_token_created"/>
+        <dropColumn tableName="users" columnName="activation_token_confirmed_at"/>
+        <dropColumn tableName="users" columnName="activation_token_used_at"/>
+
+        <dropColumn tableName="users" columnName="email_activation_token"/>
+        <dropColumn tableName="users" columnName="email_activation_token_created"/>
+    </changeSet>
+
 </databaseChangeLog>

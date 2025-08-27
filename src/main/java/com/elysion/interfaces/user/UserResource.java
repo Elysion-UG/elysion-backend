@@ -246,26 +246,23 @@ public class UserResource {
             )
     })
     public Response login(@Valid LoginRequest request) {
-        LOG.info("Login request: " + request.toString());
         try {
             User user = userService.authenticate(request.email, request.password);
             String token = userService.generateJwt(user);
-            LOG.info("Login successful");
             return Response.ok(Map.of("token", token))
                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
                     .build();
-        } catch (IllegalArgumentException e) {
-            LOG.error(e.getMessage());
-            return Response.status(Response.Status.UNAUTHORIZED)
-                    .entity(Map.of("error", e.getMessage()))
-                    .build();
-        } catch (IllegalStateException e) {
-            // z. B. "Account not activated"
-            return Response.status(Response.Status.FORBIDDEN) // 403
+        } catch (IllegalStateException e) { // "Account not activated"
+            return Response.status(Response.Status.FORBIDDEN)
                     .entity(Map.of("error", e.getMessage(), "code", "ACCOUNT_NOT_ACTIVATED"))
+                    .build();
+        } catch (IllegalArgumentException e) {
+            return Response.status(Response.Status.UNAUTHORIZED)
+                    .entity(Map.of("error", e.getMessage(), "code", "INVALID_CREDENTIALS"))
                     .build();
         }
     }
+
 
     @GET
     @Path("/confirm-email")

@@ -41,19 +41,19 @@ public class User extends PanacheEntityBase {
     @Column(name = "pending_email", unique = true)
     public String pendingEmail;
 
-    @Column(name = "activation_token", unique = true)
-    public String activationToken;
+    // @Column(name = "activation_token", unique = true)
+    // public String activationToken;
 
-    @Column(name = "activation_token_created")
-    public OffsetDateTime activationTokenCreated;
+    // @Column(name = "activation_token_created")
+    // public OffsetDateTime activationTokenCreated;
 
     /** Zeitpunkt, an dem der Aktivierungslink bestätigt wurde (ab dann Exchange-Fenster) */
-    @Column(name = "activation_token_confirmed_at")
-    public OffsetDateTime activationTokenConfirmedAt;
+    // @Column(name = "activation_token_confirmed_at")
+    // public OffsetDateTime activationTokenConfirmedAt;
 
     /** One-Time-Exchange verwendet am … (ab dann ungültig) */
-    @Column(name = "activation_token_used_at")
-    public OffsetDateTime activationTokenUsedAt;
+    // @Column(name = "activation_token_used_at")
+    // public OffsetDateTime activationTokenUsedAt;
 
     // Convenience constructor
     public User() {

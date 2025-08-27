@@ -1,6 +1,7 @@
 package com.elysion.application.user;
 
 import com.elysion.domain.user.User;
+import com.elysion.domain.user.UserToken;
 import com.elysion.security.PasswordService;
 import io.smallrye.jwt.build.Jwt;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -37,19 +38,21 @@ public class UserService {
         user.passwordHash = hash;
         user.createdAt = OffsetDateTime.now();
         user.role = "User";
-
-        // Neu:
         user.firstName = firstName;
         user.lastName = lastName;
-
-        // ✨ DOI
         user.active = false;
-        user.activationToken = UUID.randomUUID().toString();
-        user.activationTokenCreated = OffsetDateTime.now();
-
         user.persist();
 
-        mailService.sendActivationMail(user); // ✉️ Dummy-Funktion, siehe unten
+        // Activation-Token ausstellen
+        UserToken t = new UserToken();
+        t.id = UUID.randomUUID();
+        t.user = user;
+        t.type = "ACTIVATION";
+        t.token = UUID.randomUUID().toString();
+        t.createdAt = OffsetDateTime.now();
+        t.persist();
+
+        mailService.sendActivationMail(user, t.token); // ✉️ Dummy-Funktion, siehe unten
 
         return user;
     }
@@ -59,14 +62,23 @@ public class UserService {
                 User.find("pendingEmail", newEmail).firstResult() != null) {
             throw new IllegalArgumentException("E-Mail already in use");
         }
-        // Statt sofortiges Überschreiben:
         user.pendingEmail = newEmail;
-        user.activationToken = UUID.randomUUID().toString();
-        user.activationTokenCreated = OffsetDateTime.now();
         user.persist();
 
+        // offenes EMAIL_CHANGE-Token je User erzwingen
+        UserToken.update("usedAt = ?1 WHERE user = ?2 AND type = ?3 AND usedAt IS NULL",
+                OffsetDateTime.now(), user, "EMAIL_CHANGE");
+
+        UserToken t = new UserToken();
+        t.id = UUID.randomUUID();
+        t.user = user;
+        t.type = "EMAIL_CHANGE";
+        t.token = UUID.randomUUID().toString();
+        t.createdAt = OffsetDateTime.now();
+        t.persist();
+
         // E-Mail an die neue Adresse senden
-        mailService.sendEmailChangeConfirmation(user);
+        mailService.sendEmailChangeConfirmation(user, t.token);
     }
 
 
@@ -120,23 +132,20 @@ public class UserService {
     }
 
     @Transactional
-    public User confirmEmail(String token) {
-        User user = User.find("activationToken", token).firstResult();
-        if (user == null) {
-            throw new IllegalArgumentException("Invalid token");
+    public void confirmEmail(String rawToken) {
+        String token = rawToken == null ? null : rawToken.trim();
+        UserToken t = UserToken.find("lower(token) = lower(?1) AND type = ?2 AND usedAt IS NULL",
+                token, "ACTIVATION").firstResult();
+        if (t == null) throw new IllegalArgumentException("Invalid token");
+
+        User user = t.user;
+
+        if (!user.active) {
+            user.active = true;
+            user.persist();
         }
-        if (user.activationTokenCreated.isBefore(OffsetDateTime.now().minusHours(24))) {
-            throw new IllegalStateException("Token expired");
-        }
-
-        user.active = true;
-        user.activationTokenConfirmedAt = OffsetDateTime.now();
-
-        // WICHTIG: Token NICHT sofort nullen -> noch für den Einmal-Login nutzbar
-        // user.activationToken = null;  // <- absichtlich NICHT hier
-
-        user.persist();
-        return user;
+        t.confirmedAt = OffsetDateTime.now();
+        t.persist();
     }
 
     @Transactional
@@ -166,54 +175,39 @@ public class UserService {
     @Transactional
     public void resendActivationToken(String email) {
         User user = User.find("email", email).firstResult();
-        if (user == null) {
-            throw new IllegalArgumentException("User not found");
-        }
-        if (user.active) {
-            throw new IllegalStateException("Account already activated");
-        }
+        if (user == null) throw new IllegalArgumentException("User not found");
+        if (user.active) throw new IllegalStateException("Account already activated");
 
-        // Optional: Rate Limit (z. B. nicht öfter als alle 15 Minuten)
-        if (user.activationTokenCreated != null &&
-                user.activationTokenCreated.isAfter(OffsetDateTime.now().minusMinutes(15))) {
-            throw new IllegalStateException("Token was recently sent");
-        }
+        // alte offenen ACTIVATION-Tokens schließen
+        UserToken.update("usedAt = ?1 WHERE user = ?2 AND type = ?3 AND usedAt IS NULL",
+                OffsetDateTime.now(), user, "ACTIVATION");
 
-        user.activationToken = UUID.randomUUID().toString();
-        user.activationTokenCreated = OffsetDateTime.now();
-        user.persist();
+        UserToken t = new UserToken();
+        t.id = UUID.randomUUID();
+        t.user = user;
+        t.type = "ACTIVATION";
+        t.token = UUID.randomUUID().toString();
+        t.createdAt = OffsetDateTime.now();
+        t.persist();
 
-        mailService.sendActivationMail(user);
+        mailService.sendActivationMail(user, t.token);
     }
 
     @Transactional
-    public String loginWithIdentToken(String token) {
-        User user = User.find("activationToken", token).firstResult();
-        if (user == null) throw new IllegalArgumentException("Invalid token");
-
-        if (!user.active || user.activationTokenConfirmedAt == null) {
+    public String loginWithIdentToken(String rawToken) {
+        String token = rawToken == null ? null : rawToken.trim();
+        UserToken t = UserToken.find("lower(token) = lower(?1) AND type = ?2 AND usedAt IS NULL",
+                token, "ACTIVATION").firstResult();
+        if (t == null) throw new IllegalArgumentException("Invalid token");
+        if (t.confirmedAt == null || !t.user.active)
             throw new IllegalStateException("Account not activated");
-        }
 
-        // Sicherheitsfenster: z. B. 15 Minuten nach Bestätigung
-        if (user.activationTokenConfirmedAt.isBefore(OffsetDateTime.now().minusMinutes(15))) {
-            throw new IllegalStateException("Token exchange window expired");
-        }
+        // optionales Fenster nach Confirm (z.B. 15 Min):
+        // if (t.confirmedAt.isBefore(OffsetDateTime.now().minusMinutes(15)))
+        //     throw new IllegalStateException("Token exchange window expired");
 
-        // One-time use
-        if (user.activationTokenUsedAt != null) {
-            throw new IllegalStateException("Token already used");
-        }
-
-        user.activationTokenUsedAt = OffsetDateTime.now();
-
-        // Jetzt das Token invalidieren, damit es nie wieder auftaucht
-        user.activationToken = null;
-        user.activationTokenCreated = null;
-
-        user.persist();
-
-        // Reguläres Access-JWT für APIs
-        return generateJwt(user);
+        t.usedAt = OffsetDateTime.now();
+        t.persist();
+        return generateJwt(t.user);
     }
 }

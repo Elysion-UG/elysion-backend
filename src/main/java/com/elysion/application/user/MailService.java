@@ -6,8 +6,8 @@ import jakarta.enterprise.context.ApplicationScoped;
 @ApplicationScoped
 public class MailService {
 
-    public void sendActivationMail(User user) {
-        String activationLink = "https://100.66.219.89:8080/users/confirm-email?token=" + user.activationToken;
+    public void sendActivationMail(User user, String token) {
+        String activationLink = "https://100.66.219.89:8080/users/confirm-email?token=" + token;
         System.out.println("👉 Bestätigungslink: " + activationLink);
 
         // Oder echtes E-Mail-System:
@@ -18,8 +18,8 @@ public class MailService {
      * Sendet einen Bestätigungslink an die neue, noch nicht aktive E-Mail-Adresse.
      * Der User muss diesen Link klicken, um die Änderung abzuschließen.
      */
-    public void sendEmailChangeConfirmation(User user) {
-        String confirmLink = "https://100.66.219.89:8080/users/confirm-email?token=" + user.activationToken;
+    public void sendEmailChangeConfirmation(User user, String token) {
+        String confirmLink = "https://100.66.219.89:8080/users/confirm-email?token=" + token;
         System.out.println("👉 Bestätigungslink für neue E-Mails: " + confirmLink);
 
         // Bei echtem Setup:
