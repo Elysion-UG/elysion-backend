@@ -18,7 +18,7 @@ import org.jboss.logging.Logger;
 import java.util.Map;
 import java.util.UUID;
 
-@Path("/users")
+@Path("/admin")
 public class UserAdminResource {
 
     private static final Logger LOG = Logger.getLogger(UserAdminResource.class);
@@ -36,7 +36,7 @@ public class UserAdminResource {
     }
 
     @PUT
-    @Path("/{id}/role/seller")
+    @Path("/users/{id}/role/seller")
     @RolesAllowed("Admin")
     @Transactional
     public Response makeSeller(@PathParam("id") UUID userId) {
@@ -58,7 +58,7 @@ public class UserAdminResource {
     }
 
     @PUT
-    @Path("/{id}/role/admin")
+    @Path("users/{id}/role/admin")
     @Transactional
     public Response makeAdmin(@PathParam("id") UUID userId,
                               ReauthRequest body,

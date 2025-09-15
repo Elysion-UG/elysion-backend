@@ -6,10 +6,7 @@ import jakarta.annotation.security.RolesAllowed;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
-import jakarta.ws.rs.Consumes;
-import jakarta.ws.rs.PUT;
-import jakarta.ws.rs.Path;
-import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.Context;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -32,7 +29,7 @@ import java.util.Map;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
-@Path("/userprofile")
+@Path("/users")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
 @Tag(name = "Users", description = "User management API")
@@ -159,5 +156,28 @@ public class UserEditProfileResource {
         user.lastName = req.lastName;
         user.persist();
         return Response.ok(Map.of("message","Profile updated")).build();
+    }
+
+    @GET
+    @Path("/me")
+    @RolesAllowed("User")
+    @Operation(
+            summary = "Eigene User-Details",
+            description = "Liefert das User-Objekt des eingeloggten Users."
+    )
+    @SecurityRequirement(name = "bearerAuth")
+    @APIResponses({
+            @APIResponse(responseCode = "200", description = "OK",
+                    content = @Content(schema = @Schema(implementation = User.class))),
+            @APIResponse(responseCode = "404", description = "User nicht gefunden")
+    })
+    public Response me(@Context SecurityContext ctx) {
+        String email = ctx.getUserPrincipal().getName();
+        User user = userService.findByEmail(email);  // gibt null zurück, wenn nicht gefunden
+        if (user == null) {
+            // Kein User mit dieser E‑Mail – 404 Not Found
+            return Response.status(NOT_FOUND).build();
+        }
+        return Response.ok(user).build();
     }
 }

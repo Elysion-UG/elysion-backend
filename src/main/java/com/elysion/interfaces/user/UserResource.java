@@ -32,10 +32,10 @@ import java.util.Map;
 
 import static jakarta.ws.rs.core.Response.Status.NOT_FOUND;
 
-@Path("/users")
+@Path("/auth")
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Users", description = "User management API")
+@Tag(name = "Authorization", description = "User authorization API")
 @SecuritySchemes({
         @SecurityScheme(
                 securitySchemeName = "bearerAuth",
@@ -322,29 +322,6 @@ public class UserResource {
             return Response.status(Response.Status.CONFLICT)
                     .entity(Map.of("error", e.getMessage())).build();
         }
-    }
-
-    @GET
-    @Path("/me")
-    @RolesAllowed("User")
-    @Operation(
-            summary = "Eigene User-Details",
-            description = "Liefert das User-Objekt des eingeloggten Users."
-    )
-    @SecurityRequirement(name = "bearerAuth")
-    @APIResponses({
-            @APIResponse(responseCode = "200", description = "OK",
-                    content = @Content(schema = @Schema(implementation = User.class))),
-            @APIResponse(responseCode = "404", description = "User nicht gefunden")
-    })
-    public Response me(@Context SecurityContext ctx) {
-        String email = ctx.getUserPrincipal().getName();
-        User user = userService.findByEmail(email);  // gibt null zurück, wenn nicht gefunden
-        if (user == null) {
-            // Kein User mit dieser E‑Mail – 404 Not Found
-            return Response.status(NOT_FOUND).build();
-        }
-        return Response.ok(user).build();
     }
 
     @POST
